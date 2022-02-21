@@ -1,10 +1,14 @@
 import sys
+import re
 
-n = sys.argv[1]
-m = sys.argv[2]
+n = int(sys.argv[1])
+m = int(sys.argv[2])
 text_names = []
 raw_texts = []
 ngram_tables = {}
+for n0 in range(n):
+    ngram_tables[n0] = {}
+
 print(sys.argv)
 for i in range(3, len(sys.argv)):
     text_names.append(sys.argv[i])
@@ -13,31 +17,33 @@ print(text_names)
 
 
 for t in text_names:
-    temp_file = open("r", t)
+    temp_file = open(t,"r",encoding='utf-8')
     raw_texts.append(temp_file.read())
 
 for r in raw_texts:
-    sents = r.split(r"[.!?]", r)
+    r = re.sub("\n", " ", r)
+    sents = re.split(r"[.!?]", r)
 
     for sent in sents:
         toks = sent.split(" ")
         final_toks = []
         for t in toks:
-            punct = t.search(r"([,:;-])")
+            punct = re.search(r"([\“\"—,:;\-\)\(\`/_’])", t)
             if punct:
-                temp = t.split(t.group(1))
-                if (len(temp)!=1):
-                    final_toks.append(temp[0])
-                    final_toks.append(t.group(1))
-                    final_toks.append(temp[1])
-                elif t.beginswith(",") or t.beginswith(":") or t.beginswith(";") or t.beginswith("-"):
-                    final_toks.append(t[0])
-                    final_toks.append(t[1:])
-                else:
-                    final_toks.append(t[0:(len(t)-1)])
-                    final_toks.append(t[len(t)-1])
+                for g in range(len(punct.groups())):
+                    if punct.group(g).strip() != "":
+                        final_toks.append(punct.group(g).strip())
 
             else:
-                final_toks.append(t)
+                if t.strip() != "":
+                    final_toks.append(t.strip())
         if len(final_toks) >= n:
+            for n0 in range(n):
+                for i in range(len(final_toks)):
+                    if i+n0<len(final_toks):
+                        if " ".join(final_toks[0:n0+1]) not in ngram_tables[n0]:
+                            ngram_tables[n0][" ".join(final_toks[0:n0+1])] = 1
+                        else:
+                            ngram_tables[n0][" ".join(final_toks[0:n0 + 1])] += 1
+print(ngram_tables)
             ## create tables here, let's not waste memory
