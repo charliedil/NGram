@@ -1,5 +1,6 @@
 import sys
 import re
+import random
 
 n = int(sys.argv[1])
 m = int(sys.argv[2])
@@ -27,6 +28,7 @@ for r in raw_texts:
     for sent in sents:
         toks = sent.split(" ")
         final_toks = []
+        final_toks.append("BOS")
         for t in toks:
             punct = re.search(r"([\“\"—,:;\-\)\(\`/_’])", t)
             if punct:
@@ -37,13 +39,50 @@ for r in raw_texts:
             else:
                 if t.strip() != "":
                     final_toks.append(t.strip())
+        final_toks.append("EOS")
         if len(final_toks) >= n:
             for n0 in range(n):
                 for i in range(len(final_toks)):
                     if i+n0<len(final_toks):
-                        if " ".join(final_toks[0:n0+1]) not in ngram_tables[n0]:
-                            ngram_tables[n0][" ".join(final_toks[0:n0+1])] = 1
+                        if " ".join(final_toks[i:i+n0+1]) not in ngram_tables[n0]:
+                            ngram_tables[n0][" ".join(final_toks[i:i+n0+1])] = 1
                         else:
-                            ngram_tables[n0][" ".join(final_toks[0:n0 + 1])] += 1
-print(ngram_tables)
-            ## create tables here, let's not waste memory
+                            ngram_tables[n0][" ".join(final_toks[i:i+n0+1])] += 1
+print(len(ngram_tables))
+for i in range(m):
+
+    if (n>1):
+        options = {}
+        toks = []
+        toks.append("BOS")
+        for k in ngram_tables[1]:
+
+            if k.split(" ")[0] == "BOS":
+                options[k] = ngram_tables[1][k]
+        choice = random.choices(list(options.keys()), weights=list(options.values()), k=1)[0].split(" ")[-1]
+        toks.append(choice)
+        while choice != "EOS":
+            options = {}
+            prev=[]
+            if len(toks)> (n-1):
+                prev=" ".join(toks[len(toks)-(n-1):])
+                for k in ngram_tables[n-1]:
+                    if k.startswith(prev):
+                        options[k] = ngram_tables[n-1][k]
+                choice = random.choices(list(options.keys()), weights=list(options.values()), k=1)[0].split(" ")[-1]
+                toks.append(choice)
+
+            else:
+                prev = " ".join(toks)
+                for k in ngram_tables[len(toks)]:
+                    if k.startswith(prev):
+                        options[k] = ngram_tables[len(toks)][k]
+                choice = random.choices(list(options.keys()), weights=list(options.values()), k=1)[0].split(" ")[-1]
+                toks.append(choice)
+        print(" ".join(toks))
+
+
+
+
+
+
