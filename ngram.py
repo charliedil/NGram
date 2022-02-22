@@ -10,11 +10,11 @@ ngram_tables = {}
 for n0 in range(n):
     ngram_tables[n0] = {}
 
-print(sys.argv)
+
 for i in range(3, len(sys.argv)):
     text_names.append(sys.argv[i])
 
-print(text_names)
+
 
 
 for t in text_names:
@@ -48,7 +48,7 @@ for r in raw_texts:
                             ngram_tables[n0][" ".join(final_toks[i:i+n0+1])] = 1
                         else:
                             ngram_tables[n0][" ".join(final_toks[i:i+n0+1])] += 1
-print(len(ngram_tables))
+
 for i in range(m):
 
     if (n>1):
@@ -66,6 +66,7 @@ for i in range(m):
             prev=[]
             if len(toks)> (n-1):
                 prev=" ".join(toks[len(toks)-(n-1):])
+                prev+=" "
                 for k in ngram_tables[n-1]:
                     if k.startswith(prev):
                         options[k] = ngram_tables[n-1][k]
@@ -74,15 +75,22 @@ for i in range(m):
 
             else:
                 prev = " ".join(toks)
+                prev+=" "
                 for k in ngram_tables[len(toks)]:
                     if k.startswith(prev):
                         options[k] = ngram_tables[len(toks)][k]
                 choice = random.choices(list(options.keys()), weights=list(options.values()), k=1)[0].split(" ")[-1]
                 toks.append(choice)
-        print(" ".join(toks))
+        print(" ".join(toks[1:len(toks)-1]))
 
-
-
-
-
+    else:
+        choice = ""
+        toks = []
+        toks.append("BOS")
+        while choice!="EOS":
+            choice = random.choices(list(ngram_tables[0].keys()), weights=list(ngram_tables[0].values()), k=1)[0]
+            while choice == "BOS":
+                choice = random.choices(list(ngram_tables[0].keys()), weights=list(ngram_tables[0].values()), k=1)[0]
+            toks.append(choice)
+        print(" ".join(toks[1:len(toks) - 1]))
 
